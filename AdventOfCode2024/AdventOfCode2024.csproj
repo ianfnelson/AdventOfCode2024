@@ -8,11 +8,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="InputFiles\" />
+      <PackageReference Include="Autofac" Version="8.1.1" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Autofac" Version="8.1.1" />
+      <None Remove="InputFiles\1.txt" />
+      <Content Include="InputFiles\1.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
+
+
 
 </Project>
