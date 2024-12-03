@@ -8,7 +8,7 @@ var container = BuildContainer();
 var days = container.Resolve<IEnumerable<IDay>>();
 var day = GetDay();
 Console.WriteLine("Day " + day.Day);
-string inputPath = $"InputFiles/{day.Day}.txt";
+var inputPath = $"InputFiles/{day.Day}.txt";
 DoPart(1, () => day.Part1(inputPath));
 DoPart(2, () => day.Part2(inputPath));
 
