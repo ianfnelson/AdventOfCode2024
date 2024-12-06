@@ -15,12 +15,15 @@ public class Day06 : DayBase
     {
         var inputList = inputData.ToList();
         var map = new Map(inputList);
+        
+        map.Patrol();
 
         var infiniteLoopCount = 0;
 
         foreach (var position in map.Positions.Values)
         {
             if (position.IsObstacle || position.Coordinates == map.GuardVector.Coordinates) continue;
+            if (!map.Positions[position.Coordinates].IsVisited) continue;
             
             var newMap = new Map(inputList);
             newMap.Positions[position.Coordinates].IsObstacle = true;
