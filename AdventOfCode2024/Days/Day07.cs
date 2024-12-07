@@ -6,14 +6,18 @@ public class Day07 : DayBase
     {
         return inputData
             .Select(x => new Equation(x))
-            .Where(e => e.CouldBeTrue)
+            .Where(e => e.CouldBeTrue())
             .Sum(e => e.TestValue)
             .ToString();
     }
 
     protected override string Part2(IEnumerable<string> inputData)
     {
-        throw new NotImplementedException();
+        return inputData
+            .Select(x => new Equation(x))
+            .Where(e => e.CouldBeTrue(true))
+            .Sum(e => e.TestValue)
+            .ToString();
     }
 
     private class Equation
@@ -29,54 +33,68 @@ public class Day07 : DayBase
         
         public IList<int> Inputs { get; }
 
-        public bool CouldBeTrue
+        public bool CouldBeTrue(bool allowConcatenation = false)
         {
-            get
+            foreach (var operatorCombination in OperatorCombinations(Inputs.Count - 1, allowConcatenation))
             {
-                foreach (var operatorCombination in OperatorCombinations(Inputs.Count - 1))
+                long total = Inputs[0];
+
+                for (var i = 0; i < Inputs.Count-1; i++)
                 {
-                    long total = Inputs[0];
-
-                    for (var i = 0; i < Inputs.Count-1; i++)
+                    if (operatorCombination[i] == Operator.Addition)
                     {
-                        if (operatorCombination[i] == Operator.Addition)
-                        {
-                            total += Inputs[i + 1];
-                        }
-                        else
-                        {
-                            total *= Inputs[i + 1];
-                        }
-
-                        if (total > TestValue)
-                        {
-                            break;
-                        }
+                        total += Inputs[i + 1];
+                    }
+                    else if (operatorCombination[i] == Operator.Multiplication)
+                    {
+                        total *= Inputs[i + 1];
+                    } else if (operatorCombination[i] == Operator.Concatenation)
+                    {
+                        total = long.Parse($"{total}{Inputs[i + 1]}");
                     }
 
-                    if (total == TestValue)
+                    if (total > TestValue)
                     {
-                        return true;
+                        break;
                     }
                 }
 
-                return false;
+                if (total == TestValue)
+                {
+                    return true;
+                }
             }
+
+            return false;
         }
         
-        private static IEnumerable<List<Operator>> OperatorCombinations(int n)
+        private static IEnumerable<List<Operator>> OperatorCombinations(int n, bool allowConcatenation = false)
         {
-            var totalCombinations = 1 << n; // 2^n combinations
+            var operatorCount = allowConcatenation ? 3 : 2;
+            
+            var totalCombinations = (int)Math.Pow(operatorCount, n);
 
             for (var i = 0; i < totalCombinations; i++)
             {
                 var combination = new List<Operator>();
+                var current = i;
+
                 for (var j = 0; j < n; j++)
                 {
-                    // Check if the j-th bit of i is set
-                    var isAddition = (i & (1 << j)) != 0;
-                    combination.Add(isAddition ? Operator.Addition : Operator.Multiplication);
+                    var operatorIndex = current % operatorCount;
+
+                    var op = operatorIndex switch
+                    {
+                        0 => Operator.Addition,
+                        1 => Operator.Multiplication,
+                        2 => Operator.Concatenation,
+                        _ => Operator.Addition
+                    };
+
+                    combination.Add(op);
+                    current /= operatorCount;
                 }
+
                 yield return combination;
             }
         }
@@ -84,7 +102,8 @@ public class Day07 : DayBase
         enum Operator
         {
             Addition,
-            Multiplication
+            Multiplication,
+            Concatenation
         }
     }
 
