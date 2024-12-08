@@ -1,3 +1,5 @@
+using AdventOfCode2024.Common;
+
 namespace AdventOfCode2024.Days;
 
 public class Day08 : DayBase
@@ -95,15 +97,6 @@ public class Day08 : DayBase
             public char? Transmitter { get; set; } = transmitter;
             
             public bool IsAntinode { get; set; }
-        }
-        
-        public readonly record struct Coordinate(int x, int y)
-        {
-            private int X { get; } = x;
-            private int Y { get; } = y;
-            
-            public static Coordinate operator +(Coordinate a, Coordinate b) => new(a.X + b.X, a.Y + b.Y);
-            public static Coordinate operator -(Coordinate a, Coordinate b) => new(a.X - b.X, a.Y - b.Y);
         }
     }
 
