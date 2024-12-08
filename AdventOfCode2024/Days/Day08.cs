@@ -16,7 +16,14 @@ public class Day08 : DayBase
 
     protected override string Part2(IEnumerable<string> inputData)
     {
-        throw new NotImplementedException();
+        var map = new Map(inputData.ToList());
+        
+        map.CalculateSignalImpact(true);
+        
+        return map
+            .Positions
+            .Count(x => x.Value.IsAntinode)
+            .ToString();
     }
 
     public class Map
@@ -38,7 +45,7 @@ public class Day08 : DayBase
             }
         }
 
-        public void CalculateSignalImpact()
+        public void CalculateSignalImpact(bool isPart2 = false)
         {
             var transmitterGroups = Positions
                 .Values
@@ -54,24 +61,29 @@ public class Day08 : DayBase
                     {
                         var t1 = transmitters[i];
                         var t2 = transmitters[j];
-                        
-                        var direction = t2.Coordinate - t1.Coordinate;
-                        
-                        var c0 = t1.Coordinate - direction;
-                        var c3 = t2.Coordinate + direction;
-                        
-                        if (Positions.TryGetValue(c0, out var p0))
-                        {
-                            p0.IsAntinode = true;
-                        }
-
-                        if (Positions.TryGetValue(c3, out var p3))
-                        {
-                            p3.IsAntinode = true;
-                        }
+                        CalculateTransmitterImpact(t1, t2.Coordinate - t1.Coordinate, isPart2);
+                        CalculateTransmitterImpact(t2, t1.Coordinate - t2.Coordinate, isPart2);
                     }
                 }
             }
+        }
+
+        private void CalculateTransmitterImpact(Position t, Coordinate direction, bool isPart2)
+        {
+            var p = t;
+            
+            if (isPart2) { p.IsAntinode = true; }
+
+            do
+            {
+                var c0 = p.Coordinate - direction;
+                p = Positions.GetValueOrDefault(c0);
+
+                if (p != null)
+                {
+                    p.IsAntinode = true;
+                }
+            } while (p != null && isPart2);
         }
         
         public Dictionary<Coordinate, Position> Positions { get; set; } = new();
