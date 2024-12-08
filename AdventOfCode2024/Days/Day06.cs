@@ -32,7 +32,7 @@ public class Day06 : DayBase
             {
                 newMap.Patrol();
             }
-            catch (InfinitePatrolException e)
+            catch (InfinitePatrolException)
             {
                 infiniteLoopCount++;
             }
