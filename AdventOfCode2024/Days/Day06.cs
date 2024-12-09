@@ -17,14 +17,14 @@ public class Day06 : DayBase
     {
         var inputList = inputData.ToList();
         var map = new Map(inputList);
-        
+        var guardStartPoint = map.GuardVector.Coordinate;
         map.Patrol();
 
         var infiniteLoopCount = 0;
 
         foreach (var position in map.Positions.Values)
         {
-            if (position.IsObstacle || position.Coordinate == map.GuardVector.Coordinate) continue;
+            if (position.IsObstacle || position.Coordinate == guardStartPoint) continue;
             if (!map.Positions[position.Coordinate].IsVisited) continue;
             
             var newMap = new Map(inputList);
