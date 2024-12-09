@@ -6,7 +6,7 @@ public class Day09 : DayBase
     {
         var disk = new Disk(inputData.Single());
         
-        disk.Compact(true);
+        disk.CompactPart1();
         
         return disk.Checksum.ToString();
     }
@@ -15,7 +15,7 @@ public class Day09 : DayBase
     {
         var disk = new Disk(inputData.Single());
         
-        disk.Compact(false);
+        disk.CompactPart2();
         
         return disk.Checksum.ToString();
     }
@@ -26,18 +26,18 @@ public class Day09 : DayBase
         {
             var isFile = true;
             var fileId = 0;
-            int blockId = 0;
+            var blockIndex = 0;
 
             foreach (var character in input.ToCharArray())
             {
                 var length = int.Parse(character.ToString());
 
-                var file = isFile ? new File(fileId, length) : null;
+                var file = isFile ? new File(fileId, length, blockIndex) : null;
                 
                 for (var i = 0; i < length; i++)
                 {
-                    Blocks.Add(new Block(blockId, file));
-                    blockId++;
+                    Blocks.Add(new Block(blockIndex, file));
+                    blockIndex++;
                 }
 
                 if (isFile)
@@ -53,7 +53,7 @@ public class Day09 : DayBase
         private IList<Block> Blocks { get; set; } = new List<Block>();
         private IList<File> Files { get; set; } = new List<File>();
 
-        public void Compact(bool splitFiles = true)
+        public void CompactPart1()
         {
             var leftPointer = 0;
             var rightPointer = Blocks.Count-1;
@@ -79,6 +79,58 @@ public class Day09 : DayBase
                 Blocks[rightPointer].File = null;
             }
         }
+
+        public void CompactPart2()
+        {
+            for (var f = Files.Count-1; f >= 0; f--)
+            {
+                var file = Files[f];
+
+                if (TryFindNewLocation(file, out Block? block))
+                {
+                    MoveFileToLocation(file, block!);
+                }
+            }
+        }
+
+        private bool TryFindNewLocation(File file, out Block? block)
+        {
+            var blockIndex = 0;
+            var gapLength = 0;
+            do
+            {
+                if (Blocks[blockIndex].File == null)
+                {
+                    gapLength++;
+
+                    if (gapLength == file.Length)
+                    {
+                        block = Blocks[blockIndex - gapLength + 1];
+                        return true;
+                    }
+                }
+                else
+                {
+                    gapLength = 0;
+                }
+                
+                blockIndex++;
+            } while (blockIndex < file.StartIndex);
+
+            block = null;
+            return false;
+        }
+
+        private void MoveFileToLocation(File file, Block block)
+        {
+            for (var i = 0; i < file.Length; i++)
+            {
+                Blocks[block.Index+i].File = file;
+                Blocks[file.StartIndex+i].File = null;
+            }
+            
+            file.StartIndex = block.Index;
+        }
         
         public long Checksum
         {
@@ -98,11 +150,13 @@ public class Day09 : DayBase
             public File? File { get; set; } = file;
         }
         
-        public class File(int id, int length)
+        public class File(int id, int length, int startIndex)
         {
             public int Id { get; init; } = id;
 
             public int Length { get; init; } = length;
+            
+            public int StartIndex { get; set; } = startIndex;
         }
     }
 
