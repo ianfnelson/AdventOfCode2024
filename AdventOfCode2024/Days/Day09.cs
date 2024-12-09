@@ -6,14 +6,18 @@ public class Day09 : DayBase
     {
         var disk = new Disk(inputData.Single());
         
-        disk.Compact();
+        disk.Compact(true);
         
         return disk.Checksum.ToString();
     }
 
     protected override string Part2(IEnumerable<string> inputData)
     {
-        throw new NotImplementedException();
+        var disk = new Disk(inputData.Single());
+        
+        disk.Compact(false);
+        
+        return disk.Checksum.ToString();
     }
 
     public class Disk
@@ -21,41 +25,47 @@ public class Day09 : DayBase
         public Disk(string input)
         {
             var isFile = true;
-            var id = 0;
-            
+            var fileId = 0;
+            int blockId = 0;
+
             foreach (var character in input.ToCharArray())
             {
-                var blocks = int.Parse(character.ToString());
+                var length = int.Parse(character.ToString());
+
+                var file = isFile ? new File(fileId, length) : null;
                 
-                for (var i = 0; i < blocks; i++)
+                for (var i = 0; i < length; i++)
                 {
-                    Blocks.Add(isFile ? id : null);
+                    Blocks.Add(new Block(blockId, file));
+                    blockId++;
                 }
 
                 if (isFile)
                 {
-                    id++;
+                    fileId++;
+                    Files.Add(file!);
                 }
                 
                 isFile = !isFile;
             }
         }
 
-        private IList<int?> Blocks { get; set; } = new List<int?>();
+        private IList<Block> Blocks { get; set; } = new List<Block>();
+        private IList<File> Files { get; set; } = new List<File>();
 
-        public void Compact()
+        public void Compact(bool splitFiles = true)
         {
             var leftPointer = 0;
             var rightPointer = Blocks.Count-1;
 
             while (leftPointer < rightPointer - 1)
             {
-                while (Blocks[leftPointer] != null)
+                while (Blocks[leftPointer].File != null)
                 {
                     leftPointer++;
                 }
 
-                while (Blocks[rightPointer] == null)
+                while (Blocks[rightPointer].File == null)
                 {
                     rightPointer--;
                 }
@@ -65,8 +75,8 @@ public class Day09 : DayBase
                     break;
                 }
                 
-                Blocks[leftPointer] = Blocks[rightPointer];
-                Blocks[rightPointer] = null;
+                Blocks[leftPointer].File = Blocks[rightPointer].File;
+                Blocks[rightPointer].File = null;
             }
         }
         
@@ -74,19 +84,25 @@ public class Day09 : DayBase
         {
             get
             {
-                long total = 0;
-
-                for (var i = 0; i < Blocks.Count; i++)
-                {
-                    if (!Blocks[i].HasValue)
-                    {
-                        continue;
-                    }
-                    total += i * Blocks[i]!.Value;
-                }
-
-                return total;
+                return Blocks
+                    .Where(x => x.File!=null)
+                    .Select(x => (long)(x.File!.Id * x.Index))
+                    .Sum();
             }
+        }
+
+        public class Block(int index, File? file)
+        {
+            public int Index { get; set; } = index;
+
+            public File? File { get; set; } = file;
+        }
+        
+        public class File(int id, int length)
+        {
+            public int Id { get; init; } = id;
+
+            public int Length { get; init; } = length;
         }
     }
 
