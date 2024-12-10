@@ -21,7 +21,17 @@ public class Day10 : DayBase
 
     protected override string Part2(IEnumerable<string> inputData)
     {
-        throw new NotImplementedException();
+        var map = new Map(inputData.ToList());
+
+        var tasks = map
+            .Positions
+            .Where(x => x.Value.Elevation == 0)
+            .Select(valley => map.CountTrailsToSummitFrom(valley.Value))
+            .ToList();
+
+        var results = Task.WhenAll(tasks).Result;
+
+        return results.Sum().ToString();
     }
 
     public override int Day => 10;
@@ -67,6 +77,33 @@ public class Day10 : DayBase
             var results = await Task.WhenAll(tasks);
 
             return results.SelectMany(x => x).Distinct().ToList();
+        }
+        
+        public async Task<int> CountTrailsToSummitFrom(Position position)
+        {
+            if (position.Elevation == 9)
+            {
+                return await Task.FromResult(1);
+            }
+
+            var tasks = new List<Task<int>> { Task.FromResult(0) };
+
+            foreach (var direction in new[] { Direction.North, Direction.East, Direction.South, Direction.West })
+            {
+                if (!Positions.TryGetValue(position.Coordinate.Move(direction), out var nextPosition))
+                {
+                    continue;
+                }
+        
+                if (nextPosition.Elevation == position.Elevation + 1)
+                {
+                    tasks.Add(CountTrailsToSummitFrom(nextPosition));
+                }
+            }
+
+            var results = await Task.WhenAll(tasks);
+
+            return results.Sum();
         }
         
         public class Position(int x, int y, int elevation)
