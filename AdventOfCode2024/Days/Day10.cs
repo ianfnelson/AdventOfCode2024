@@ -6,39 +6,25 @@ public class Day10 : DayBase
 {
     protected override string Part1(IEnumerable<string> inputData)
     {
-        var map = new Map(inputData.ToList());
-
-        var tasks = map
-            .Positions
-            .Where(x => x.Value.Elevation == 0)
-            .Select(valley => map.SummitsReachableFrom(valley.Value))
-            .ToList();
-
-        var results = Task.WhenAll(tasks).Result;
-        
-        return results.Sum(x => x.Count).ToString();
+        return new Map(inputData.ToList())
+            .SummitTrails()
+            .Sum(x => x.Distinct().Count())
+            .ToString();
     }
 
     protected override string Part2(IEnumerable<string> inputData)
     {
-        var map = new Map(inputData.ToList());
-
-        var tasks = map
-            .Positions
-            .Where(x => x.Value.Elevation == 0)
-            .Select(valley => map.CountTrailsToSummitFrom(valley.Value))
-            .ToList();
-
-        var results = Task.WhenAll(tasks).Result;
-
-        return results.Sum().ToString();
+        return new Map(inputData.ToList())
+            .SummitTrails()
+            .Sum(x => x.Count)
+            .ToString();
     }
 
     public override int Day => 10;
 
-    public class Map
+    private class Map
     {
-        public Dictionary<Coordinate, Position> Positions { get; set; } = new();
+        private Dictionary<Coordinate, Position> Positions { get; } = new();
         
         public Map(IList<string> inputData)
         {
@@ -52,7 +38,17 @@ public class Day10 : DayBase
             }
         }
 
-        public async Task<List<Coordinate>> SummitsReachableFrom(Position position)
+        public List<Coordinate>[] SummitTrails()
+        {
+            var tasks = Positions
+                .Where(x => x.Value.Elevation == 0)
+                .Select(valley => SummitTrails(valley.Value))
+                .ToList();
+
+            return Task.WhenAll(tasks).Result;
+        }
+
+        private async Task<List<Coordinate>> SummitTrails(Position position)
         {
             if (position.Elevation == 9)
             {
@@ -70,43 +66,16 @@ public class Day10 : DayBase
                 
                 if (nextPosition.Elevation == position.Elevation + 1)
                 {
-                    tasks.Add(SummitsReachableFrom(nextPosition));
+                    tasks.Add(SummitTrails(nextPosition));
                 }
             }
 
             var results = await Task.WhenAll(tasks);
 
-            return results.SelectMany(x => x).Distinct().ToList();
+            return results.SelectMany(x => x).ToList();
         }
-        
-        public async Task<int> CountTrailsToSummitFrom(Position position)
-        {
-            if (position.Elevation == 9)
-            {
-                return await Task.FromResult(1);
-            }
 
-            var tasks = new List<Task<int>> { Task.FromResult(0) };
-
-            foreach (var direction in new[] { Direction.North, Direction.East, Direction.South, Direction.West })
-            {
-                if (!Positions.TryGetValue(position.Coordinate.Move(direction), out var nextPosition))
-                {
-                    continue;
-                }
-        
-                if (nextPosition.Elevation == position.Elevation + 1)
-                {
-                    tasks.Add(CountTrailsToSummitFrom(nextPosition));
-                }
-            }
-
-            var results = await Task.WhenAll(tasks);
-
-            return results.Sum();
-        }
-        
-        public class Position(int x, int y, int elevation)
+        private class Position(int x, int y, int elevation)
         {
             public Coordinate Coordinate { get; } = new(x, y);
             
