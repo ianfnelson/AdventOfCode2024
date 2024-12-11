@@ -22,10 +22,4 @@ public class Day11Tests
         
         Assert.That(stones.Count, Is.EqualTo(expectedStonesCount));
     } 
-    
-    // [Test]
-    // public void Part2Test()
-    // {
-    //     Assert.That(_systemUnderTest.Part2("TestData/10.txt"), Is.EqualTo("81"));
-    // } 
 }

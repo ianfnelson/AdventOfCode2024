@@ -13,17 +13,22 @@ public class Day11 : DayBase
 
     protected override string Part2(IEnumerable<string> inputData)
     {
-        throw new NotImplementedException();
+        var stones = new Stones(inputData.Single());
+        
+        stones.Blink(75);
+        
+        return stones.Count.ToString();
     }
 
     public override int Day => 11;
 
     public class Stones(string input)
     {
-        private readonly List<long> _stones = input
+        private readonly Dictionary<long, long> _stoneCounts = input
             .Split(" ")
             .Select(long.Parse)
-            .ToList();
+            .GroupBy(x => x)
+            .ToDictionary(x => x.Key, x => (long)x.Count());
 
         public void Blink(int times)
         {
@@ -33,27 +38,49 @@ public class Day11 : DayBase
             }
         }
         
-        public void Blink()
+        private void Blink()
         {
-            for (int i = _stones.Count-1; i >=0; i--)
+            foreach (var stoneCount in _stoneCounts.ToList())
             {
-                string stoneString = _stones[i].ToString();
-                if (stoneString == "0")
+                var changedStones = ChangeStone(stoneCount.Key);
+
+                foreach (var stone in changedStones)
                 {
-                    _stones[i] = 1L;
-                } else if (stoneString.Length % 2 == 0)
-                {
-                    var halfLength = stoneString.Length / 2;
-                    _stones[i] = long.Parse(stoneString[..halfLength]);
-                    _stones.Insert(i+1, long.Parse(stoneString[halfLength..]));
+                    if (_stoneCounts.ContainsKey(stone))
+                    {
+                        _stoneCounts[stone] += stoneCount.Value;
+                    }
+                    else
+                    {
+                        _stoneCounts[stone] = stoneCount.Value;
+                    }
                 }
-                else
-                {
-                    _stones[i] *= 2024;
-                }
+
+                _stoneCounts[stoneCount.Key] -= stoneCount.Value;
             }
         }
 
-        public int Count => _stones.Count;
+        private static List<long> ChangeStone(long input)
+        {
+            if (input == 0L)
+            {
+                return [1L];
+            }
+
+            var stoneString = input.ToString();
+
+            if (stoneString.Length % 2 == 0)
+            {
+                var halfLength = stoneString.Length / 2;
+                var s1 = long.Parse(stoneString[..halfLength]);
+                var s2 = long.Parse(stoneString[halfLength..]);
+
+                return [s1, s2];
+            }
+
+            return [input * 2024];
+        }
+        
+        public long Count => _stoneCounts.Sum(x => x.Value);
     }
 }
