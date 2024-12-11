@@ -4,7 +4,11 @@ public class Day11 : DayBase
 {
     protected override string Part1(IEnumerable<string> inputData)
     {
-        throw new NotImplementedException();
+        var stones = new Stones(inputData.Single());
+        
+        stones.Blink(25);
+        
+        return stones.Count.ToString();
     }
 
     protected override string Part2(IEnumerable<string> inputData)
@@ -12,20 +16,44 @@ public class Day11 : DayBase
         throw new NotImplementedException();
     }
 
-    public class Stones
+    public override int Day => 11;
+
+    public class Stones(string input)
     {
-        public Stones(string input)
+        private readonly List<long> _stones = input
+            .Split(" ")
+            .Select(long.Parse)
+            .ToList();
+
+        public void Blink(int times)
         {
-            
+            for (var i = 0; i < times; i++)
+            {
+                Blink();
+            }
         }
-
-        public List<long> StonesList { get; set; } = new List<long>();
-
+        
         public void Blink()
         {
-            throw new NotImplementedException();
+            for (int i = _stones.Count-1; i >=0; i--)
+            {
+                string stoneString = _stones[i].ToString();
+                if (stoneString == "0")
+                {
+                    _stones[i] = 1L;
+                } else if (stoneString.Length % 2 == 0)
+                {
+                    var halfLength = stoneString.Length / 2;
+                    _stones[i] = long.Parse(stoneString[..halfLength]);
+                    _stones.Insert(i+1, long.Parse(stoneString[halfLength..]));
+                }
+                else
+                {
+                    _stones[i] *= 2024;
+                }
+            }
         }
-    }
 
-    public override int Day => 11;
+        public int Count => _stones.Count;
+    }
 }

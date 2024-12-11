@@ -2,8 +2,8 @@ namespace AdventOfCode2024.Days;
 
 public abstract class DayBase : IDay
 {
-    public abstract string Part1(IEnumerable<string> inputData);
-    public abstract string Part2(IEnumerable<string> inputData);
+    protected abstract string Part1(IEnumerable<string> inputData);
+    protected abstract string Part2(IEnumerable<string> inputData);
 
     public abstract int Day { get; }
 
