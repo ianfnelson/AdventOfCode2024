@@ -49,6 +49,7 @@
       <Content Include="TestData\10.txt">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <None Remove="TestData\11.txt" />
     </ItemGroup>
 
     <ItemGroup>
