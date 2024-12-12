@@ -6,18 +6,21 @@ public class Day12 : DayBase
 {
     protected override string Part1(IEnumerable<string> inputData)
     {
-        var garden = new Garden(inputData.ToList());
-
-        var regions = garden.CalculateRegions().ToList();
-
-        return regions
+        return new Garden(inputData.ToList())
+            .CalculateRegions()
             .Sum(x => x.Price)
             .ToString();
     }
 
     protected override string Part2(IEnumerable<string> inputData)
     {
-        throw new NotImplementedException();
+        var regions = new Garden(inputData.ToList())
+            .CalculateRegions()
+            .ToList();
+            
+            
+            return regions.Sum(x => x.DiscountPrice)
+            .ToString();
     }
 
     public override int Day => 12;
@@ -56,6 +59,7 @@ public class Day12 : DayBase
             stack.Push(plot);
             var area = 0;
             var perimeter = 0;
+            var corners = 0;
             var plant = plot.Plant;
 
             var directions = new[] { Direction.North, Direction.East, Direction.South, Direction.West };
@@ -67,48 +71,63 @@ public class Day12 : DayBase
                 
                 foreach (var direction in directions)
                 {
-                    if (!Plots.TryGetValue(p1.Coordinate.Move(direction), out Plot? p2))
+                    if (!Plots.TryGetValue(p1.Coordinate.Move(direction), out var p2) || p2.Plant != plant)
                     {
                         perimeter++;
-                        continue;
-                    }
 
-                    if (p2.Plant == plant)
+                        // Check for a convex corner
+                        var clockwiseDirection = direction.Rotate90();
+                        if (!Plots.TryGetValue(p1.Coordinate.Move(clockwiseDirection), out var p3) || p3.Plant != plant)
+                        {
+                            corners++;
+                        }
+
+                    } else 
                     {
                         if (!p2.Visited)
                         {
                             p2.Visited = true;
                             stack.Push(p2);
                         }
-                    }
-                    else
-                    {
-                        perimeter++;
+                        
+                        // Check for a convex corner
+                        var clockwiseDirection = direction.Rotate90();
+                        if (Plots.TryGetValue(p1.Coordinate.Move(clockwiseDirection), out var p4) && p4.Plant == plant)
+                        {
+                            if (Plots[p4.Coordinate.Move(direction)].Plant != plant)
+                            {
+                                corners++;
+                            }
+                        }
                     }
                 }
             }
 
-            return new Region(area, perimeter, plant);
+            return new Region(area, perimeter, corners, plant);
         }
         
         public class Plot(int x, int y, char plant)
         {
-            public Coordinate Coordinate { get; set; } = new Coordinate(x, y);
+            public Coordinate Coordinate { get; } = new(x, y);
 
-            public char Plant { get; set; } = plant;
+            public char Plant { get; } = plant;
             
             public bool Visited { get; set; }
         }
         
-        public class Region(int area, int perimeter, char plant)
+        public class Region(int area, int perimeter, int sides, char plant)
         {
-            public int Area { get; set; } = area;
+            public int Area { get; } = area;
+            
+            public int Perimeter { get; } = perimeter;
+            
+            public char Plant { get; } = plant;
 
-            public int Perimeter { get; set; } = perimeter;
-
-            public char Plant { get; set; } = plant;
+            public int Sides { get; set; } = sides;
             
             public int Price => Area * Perimeter;
+
+            public int DiscountPrice => Area * Sides;
         }
     }
 }
