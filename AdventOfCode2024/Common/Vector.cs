@@ -7,13 +7,6 @@ public class Vector(Coordinate coordinate, Direction direction)
 
     public void Rotate90()
     {
-        Direction = Direction switch
-        {
-            Direction.North => Direction.East,
-            Direction.East => Direction.South,
-            Direction.South => Direction.West,
-            Direction.West => Direction.North,
-            _ => throw new ArgumentOutOfRangeException()
-        };
+        Direction = Direction.Rotate90();
     }
 }
