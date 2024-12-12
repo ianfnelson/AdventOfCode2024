@@ -14,12 +14,9 @@ public class Day12 : DayBase
 
     protected override string Part2(IEnumerable<string> inputData)
     {
-        var regions = new Garden(inputData.ToList())
+        return new Garden(inputData.ToList())
             .CalculateRegions()
-            .ToList();
-            
-            
-            return regions.Sum(x => x.DiscountPrice)
+            .Sum(x => x.DiscountPrice)
             .ToString();
     }
 
@@ -60,7 +57,6 @@ public class Day12 : DayBase
             var area = 0;
             var perimeter = 0;
             var corners = 0;
-            var plant = plot.Plant;
 
             var directions = new[] { Direction.North, Direction.East, Direction.South, Direction.West };
 
@@ -71,41 +67,50 @@ public class Day12 : DayBase
                 
                 foreach (var direction in directions)
                 {
-                    if (!Plots.TryGetValue(p1.Coordinate.Move(direction), out var p2) || p2.Plant != plant)
+                    corners += IsClockwiseCorner(p1, direction) ? 1 : 0;
+                    
+                    if (!Plots.TryGetValue(p1.Coordinate.Move(direction), out var p2) || p2.Plant != p1.Plant)
                     {
                         perimeter++;
-
-                        // Check for a convex corner
-                        var clockwiseDirection = direction.Rotate90();
-                        if (!Plots.TryGetValue(p1.Coordinate.Move(clockwiseDirection), out var p3) || p3.Plant != plant)
-                        {
-                            corners++;
-                        }
-
-                    } else 
+                    } else if (!p2.Visited)
                     {
-                        if (!p2.Visited)
-                        {
-                            p2.Visited = true;
-                            stack.Push(p2);
-                        }
-                        
-                        // Check for a convex corner
-                        var clockwiseDirection = direction.Rotate90();
-                        if (Plots.TryGetValue(p1.Coordinate.Move(clockwiseDirection), out var p4) && p4.Plant == plant)
-                        {
-                            if (Plots[p4.Coordinate.Move(direction)].Plant != plant)
-                            {
-                                corners++;
-                            }
-                        }
+                        p2.Visited = true;
+                        stack.Push(p2);
                     }
                 }
             }
 
-            return new Region(area, perimeter, corners, plant);
+            return new Region(area, perimeter, corners, plot.Plant);
         }
-        
+
+        private bool IsClockwiseCorner(Plot p1, Direction direction)
+        {
+            var clockwiseDirection = direction.Rotate90();
+
+            if (!Plots.TryGetValue(p1.Coordinate.Move(direction), out var p2) || p2.Plant != p1.Plant)
+            {
+                if (IsConvexCorner(p1, clockwiseDirection)) return true;
+            }
+            else
+            {
+                if (IsConcaveCorner(p1, direction, clockwiseDirection)) return true;
+            }
+
+            return false;
+        }
+
+        private bool IsConcaveCorner(Plot p1, Direction direction, Direction clockwiseDirection)
+        {
+            return Plots.TryGetValue(p1.Coordinate.Move(clockwiseDirection), out var p2)
+                   && p2.Plant == p1.Plant
+                   && Plots[p2.Coordinate.Move(direction)].Plant != p1.Plant;
+        }
+
+        private bool IsConvexCorner(Plot p1, Direction clockwiseDirection)
+        {
+            return !Plots.TryGetValue(p1.Coordinate.Move(clockwiseDirection), out var p2) || p2.Plant != p1.Plant;
+        }
+
         public class Plot(int x, int y, char plant)
         {
             public Coordinate Coordinate { get; } = new(x, y);
@@ -123,7 +128,7 @@ public class Day12 : DayBase
             
             public char Plant { get; } = plant;
 
-            public int Sides { get; set; } = sides;
+            public int Sides { get; } = sides;
             
             public int Price => Area * Perimeter;
 
