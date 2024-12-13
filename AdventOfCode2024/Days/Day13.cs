@@ -6,8 +6,16 @@ public class Day13 : DayBase
 {
     protected override string Part1(IEnumerable<string> inputData)
     {
-        var equations = ParseInput(inputData.ToList()).ToList();
-        
+       return ParseInput(inputData.ToList())
+            .Select(x => x.Solve())
+            .Where(x => x.HasSolutionInFewerThan100Presses)
+            .Sum(x => x.Tokens)
+            .ToString();
+    }
+
+    protected override string Part2(IEnumerable<string> inputData)
+    {
+        var equations = ParseInput(inputData.ToList(), 10000000000000L).ToList();
         
         return equations
             .Select(x => x.Solve())
@@ -16,18 +24,13 @@ public class Day13 : DayBase
             .ToString();
     }
 
-    protected override string Part2(IEnumerable<string> inputData)
-    {
-        throw new NotImplementedException();
-    }
-
     public override int Day => 13;
 
-    private IEnumerable<SimultaneousEquation> ParseInput(IList<string> inputData)
+    private IEnumerable<SimultaneousEquation> ParseInput(IList<string> inputData, long prizeError = 0L)
     {
         var numbers = new Regex(@"(\d+)");
         
-        for (int i = 0; i < inputData.Count; i+=4)
+        for (var i = 0; i < inputData.Count; i+=4)
         {
             MatchCollection matchesA = numbers.Matches(inputData[i]);
             var a1 = int.Parse(matchesA[0].Value);
@@ -38,21 +41,21 @@ public class Day13 : DayBase
             var b2 = int.Parse(matchesB[1].Value);
             
             MatchCollection matchesC = numbers.Matches(inputData[i+2]);
-            var c1 = int.Parse(matchesC[0].Value);
-            var c2 = int.Parse(matchesC[1].Value);
+            var c1 = prizeError + int.Parse(matchesC[0].Value);
+            var c2 = prizeError + int.Parse(matchesC[1].Value);
 
             yield return new SimultaneousEquation(a1, b1, c1, a2, b2, c2);
         }
     }
 
-    public class SimultaneousEquation(int a1, int b1, int c1, int a2, int b2, int c2)
+    public class SimultaneousEquation(int a1, int b1, long c1, int a2, int b2, long c2)
     {
         private readonly int _a1 = a1;
         private readonly int _b1 = b1;
-        private readonly int _c1 = c1;
+        private readonly long _c1 = c1;
         private readonly int _a2 = a2;
         private readonly int _b2 = b2;
-        private readonly int _c2 = c2;
+        private readonly long _c2 = c2;
 
         public Solution Solve()
         {
@@ -80,9 +83,7 @@ public class Day13 : DayBase
 
                 HasSolution = 
                     A % 1 == 0 &&
-                    B % 1 == 0 &&
-                    A <= 100.0 && 
-                    B <= 100.0;
+                    B % 1 == 0;
             }
 
             public static Solution None => new();
@@ -93,7 +94,9 @@ public class Day13 : DayBase
             
             public bool HasSolution { get; }
 
-            public int Tokens => !HasSolution ? 0 : 3 * (int)A + (int)B;
+            public bool HasSolutionInFewerThan100Presses => HasSolution && A <= 100 && B <= 100;
+
+            public long Tokens => !HasSolution ? 0 : 3 * (long)A + (long)B;
         }
     }
 }
