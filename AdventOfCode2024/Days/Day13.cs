@@ -8,7 +8,7 @@ public class Day13 : DayBase
     {
        return ParseInput(inputData.ToList())
             .Select(x => x.Solve())
-            .Where(x => x.HasIntegerSolutionInFewerThan100Presses)
+            .Where(x => x.HasSolution)
             .Sum(x => x.Tokens)
             .ToString();
     }
@@ -19,7 +19,7 @@ public class Day13 : DayBase
         
         return equations
             .Select(x => x.Solve())
-            .Where(x => x.HasIntegerSolution)
+            .Where(x => x.HasSolution)
             .Sum(x => x.Tokens)
             .ToString();
     }
@@ -75,7 +75,7 @@ public class Day13 : DayBase
                 A = a;
                 B = b;
 
-                HasIntegerSolution = 
+                HasSolution = 
                     A % 1 == 0 &&
                     B % 1 == 0;
             }
@@ -86,11 +86,9 @@ public class Day13 : DayBase
             
             public double B { get; }
             
-            public bool HasIntegerSolution { get; }
+            public bool HasSolution { get; }
 
-            public bool HasIntegerSolutionInFewerThan100Presses => HasIntegerSolution && A <= 100 && B <= 100;
-
-            public long Tokens => !HasIntegerSolution ? 0 : 3 * (long)A + (long)B;
+            public long Tokens => !HasSolution ? 0 : 3 * (long)A + (long)B;
         }
     }
 }
