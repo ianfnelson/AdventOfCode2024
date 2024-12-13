@@ -70,6 +70,10 @@
       <Content Include="TestData\12d.txt">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <None Remove="TestData\13.txt" />
+      <Content Include="TestData\13.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
     <ItemGroup>
