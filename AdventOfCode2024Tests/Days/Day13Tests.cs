@@ -12,5 +12,4 @@ public class Day13Tests
     {
         Assert.That(_systemUnderTest.Part1("TestData/13.txt"), Is.EqualTo("480"));
     }
-
 }

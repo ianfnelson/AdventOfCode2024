@@ -2,8 +2,8 @@ namespace AdventOfCode2024.Common;
 
 public readonly record struct Coordinate(int x, int y)
 {
-    private int X { get; } = x;
-    private int Y { get; } = y;
+    public int X { get; } = x;
+    public int Y { get; } = y;
 
     public Coordinate Move(Direction direction)
     {
