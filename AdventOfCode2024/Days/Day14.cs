@@ -78,33 +78,16 @@ public class Day14 : DayBase
         {
             get
             {
-                return QuadrantCounts
-                    .Values
+                return Robots
+                    .GroupBy(r => DetermineQuadrant(r.Position))
+                    .Where(g => g.Key != "Middle")
+                    .Select(g => g.Count())
                     .Aggregate(1, (a, b) => a * b);
             }
         }
 
-        public Dictionary<string, int> QuadrantCounts
-        {
-            get
-            {
-                return Robots
-                    .GroupBy(r => DetermineQuadrant(r.Position))
-                    .Where(g => g.Key != "Middle")
-                    .ToDictionary(g => g.Key, g => g.Count());
-            }
-        }
+        public bool IsPotentialTree => Adjacency > 0.5D;
 
-        public bool IsPotentialTree
-        {
-            get
-            {
-                var qc = QuadrantCounts;
-
-                return qc["NW"] == qc["NE"] && qc["SW"] == qc["SE"];
-            }
-        }
-        
         private string DetermineQuadrant(Coordinate coordinate)
         {
             var midX = (Width - 1) / 2;
@@ -116,6 +99,24 @@ public class Day14 : DayBase
             if (coordinate.X > midX && coordinate.Y > midY) return "SE";
 
             return "Middle";
+        }
+
+        private double Adjacency
+        {
+            get
+            {
+                var directions = new[] { Direction.East, Direction.North, Direction.South, Direction.West };
+
+                var occupiedPositions = Robots
+                    .Select(x => x.Position)
+                    .Distinct()
+                    .ToHashSet();
+
+                var adjacentPositions = occupiedPositions
+                    .Count(position => directions.Any(d => occupiedPositions.Contains(position.Move(d))));
+
+                return (double)adjacentPositions / Robots.Count;
+            }
         }
 
         public class Robot (int px, int py, int vx, int vy, Map map)
