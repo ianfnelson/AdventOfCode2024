@@ -13,4 +13,10 @@ public class Day15Tests
     {
         Assert.That(_systemUnderTest.Part1($"TestData/{filename}"), Is.EqualTo(expected));
     }
+    
+    [Test]
+    public void Part2Test()
+    {
+        Assert.That(_systemUnderTest.Part2($"TestData/15b.txt"), Is.EqualTo("9021"));
+    }
 }

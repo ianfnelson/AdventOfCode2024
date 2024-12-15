@@ -15,22 +15,28 @@ public class Day15 : DayBase
 
     protected override string Part2(IEnumerable<string> inputData)
     {
-        throw new NotImplementedException();
+        var puzzle = new Puzzle(inputData.ToList(), true);
+        
+        puzzle.DoPuzzle();
+
+        return puzzle.SumOfBoxesGpsCoordinates.ToString();
     }
 
     public override int Day => 15;
 
     public class Puzzle
     {
-        public Puzzle(IList<string> inputData)
+        public Puzzle(IList<string> inputData, bool doubleWidth = false)
         {
             var y = 0;
 
             while (inputData[y].Length > 0)
             {
-                for (var x = 0; x < inputData[y].Length; x++)
+                var inputLine = doubleWidth ? WidenMapInput(inputData[y]) : inputData[y];
+                
+                for (var x = 0; x < inputLine.Length; x++)
                 {
-                    var contents = ParseContents(inputData[y][x]);
+                    var contents = ParseContents(inputLine[x]);
                     var position = new Position(x, y, contents);
                     Map.Add(position.Coordinate, position);
                 }
@@ -51,6 +57,15 @@ public class Day15 : DayBase
             }
         }
 
+        private static string WidenMapInput(string input)
+        {
+            return input
+                .Replace("#", "##")
+                .Replace("O", "[]")
+                .Replace(".", "..")
+                .Replace("@", "@.");
+        }
+
         private static Contents ParseContents(char character)
         {
             return character switch
@@ -59,6 +74,8 @@ public class Day15 : DayBase
                 'O' => Contents.Box,
                 '.' => Contents.Space,
                 '@' => Contents.Robot,
+                '[' => Contents.BoxLeft,
+                ']' => Contents.BoxRight,
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -66,40 +83,63 @@ public class Day15 : DayBase
         public void DoPuzzle()
         {
             var position = Map.Values.Single(x => x.Contents == Contents.Robot);
-            
-            foreach (var move in Moves)
-            {
-                position = Move(position, move);
-            }
+
+            Moves.Aggregate(position, Move);
         }
 
         private Position Move(Position position, Direction direction)
         {
-            // Seek out the next space. Stop if we hit brick wall.
-            var spaceOrWall = position;
-            do
+            // Determine if we can move forward, and any boxes that will be pushed
+            if (!CanMoveForward(position, direction, out var movedItems))
             {
-                spaceOrWall = Map[spaceOrWall.Coordinate.Move(direction)];
-            } while (spaceOrWall.Contents == Contents.Box);
-            
-            // If we hit a wall before finding a space, we cannot move.
-            if (spaceOrWall.Contents == Contents.Wall)
-            {
+                // We cannot move. Stay in the same position.
                 return position;
             }
+
+            // Push any boxes necessary.
+            PushBoxes(movedItems, direction);
             
-            // We found a space! The robot can move forward, leaving a space behind.
+            // Determine the next position for the robot, and back-fill current position with a space.
             var nextPosition = Map[position.Coordinate.Move(direction)];
             position.Contents = Contents.Space;
             nextPosition.Contents = Contents.Robot;
-            
-            // Move a box into the final position if necessary
-            if (spaceOrWall.Coordinate != nextPosition.Coordinate)
-            {
-                spaceOrWall.Contents = Contents.Box;
-            }
 
             return nextPosition;
+        }
+
+        private bool CanMoveForward(Position position, Direction direction, out IList<Position> pushedBoxes)
+        {
+            pushedBoxes = new List<Position>();
+            
+            do
+            {
+                position = Map[position.Coordinate.Move(direction)];
+
+                switch (position.Contents)
+                {
+                    case Contents.Box:
+                        pushedBoxes.Add(position);
+                        break;
+                    case Contents.Space:
+                        return true;
+                    default:
+                        return false;
+                }
+            } while (true);
+        }
+
+        private void PushBoxes(IList<Position> boxes, Direction direction)
+        {
+            var tuples = boxes
+                .Select(x => new Tuple<Coordinate, Contents>(x.Coordinate, x.Contents))
+                .Reverse()
+                .ToList();
+
+            foreach (var tuple in tuples)
+            {
+                Map[tuple.Item1.Move(direction)].Contents = tuple.Item2;
+                Map[tuple.Item1].Contents = Contents.Space;
+            }
         }
 
         public List<Direction> Moves { get; } = new();
@@ -109,7 +149,7 @@ public class Day15 : DayBase
         public int SumOfBoxesGpsCoordinates =>
             Map
                 .Values
-                .Where(x => x.Contents == Contents.Box)
+                .Where(x => x.Contents is Contents.Box or Contents.BoxLeft)
                 .Sum(x => x.GpsCoordinate);
 
         public class Position(int x, int y, Contents contents)
@@ -126,7 +166,9 @@ public class Day15 : DayBase
             Wall,
             Box,
             Robot,
-            Space
+            Space,
+            BoxLeft,
+            BoxRight
         }
     }
 }
