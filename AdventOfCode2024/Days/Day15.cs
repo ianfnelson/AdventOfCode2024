@@ -115,27 +115,27 @@ public class Day15 : DayBase
             
             do
             {
-                positions = GetNextPositions(positions, direction);
+                positions = GetNextBlocksOrWall(positions, direction);
+
+                if (!positions.Any())
+                {
+                    return true;
+                }
 
                 if (positions.Any(x => x.Contents == Contents.Wall))
                 {
                     return false;
                 }
-
-                if (positions.All(x => x.Contents == Contents.Space))
-                {
-                    return true;
-                }
                 
-                pushedBoxes.AddRange(positions.Where(x => x.Contents != Contents.Space));
+                pushedBoxes.AddRange(positions);
             } while (true);
         }
 
-        private List<Position> GetNextPositions(IList<Position> positions, Direction direction)
+        private List<Position> GetNextBlocksOrWall(IList<Position> positions, Direction direction)
         {
             var nextPositions = new List<Position>();
 
-            foreach (var position in positions.Where(x => x.Contents != Contents.Space))
+            foreach (var position in positions)
             {
                 var nextPosition = Map[position.Coordinate.Move(direction)];
                 
@@ -155,7 +155,7 @@ public class Day15 : DayBase
                 }
             }
 
-            return nextPositions.ToList();
+            return nextPositions.Where(x => x.Contents != Contents.Space).ToList();
         }
 
         private void PushBoxes(IList<Position> boxes, Direction direction)
