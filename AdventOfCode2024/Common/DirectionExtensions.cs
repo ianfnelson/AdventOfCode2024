@@ -12,4 +12,16 @@ public static class DirectionExtensions {
             _ => throw new ArgumentOutOfRangeException()
         };
     }
+
+    public static Direction ParseDirection(this char character)
+    {
+        return character switch
+        {
+            '^' => Direction.North,
+            'v' => Direction.South,
+            '<' => Direction.West,
+            '>' => Direction.East,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
 }
