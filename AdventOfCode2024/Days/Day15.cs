@@ -103,29 +103,59 @@ public class Day15 : DayBase
             var nextPosition = Map[position.Coordinate.Move(direction)];
             position.Contents = Contents.Space;
             nextPosition.Contents = Contents.Robot;
-
+            
             return nextPosition;
         }
 
-        private bool CanMoveForward(Position position, Direction direction, out IList<Position> pushedBoxes)
+        private bool CanMoveForward(Position position, Direction direction, out List<Position> pushedBoxes)
         {
-            pushedBoxes = new List<Position>();
+            pushedBoxes = [];
+
+            var positions = new List<Position> { position };
             
             do
             {
-                position = Map[position.Coordinate.Move(direction)];
+                positions = GetNextPositions(positions, direction);
 
-                switch (position.Contents)
+                if (positions.Any(x => x.Contents == Contents.Wall))
                 {
-                    case Contents.Box:
-                        pushedBoxes.Add(position);
-                        break;
-                    case Contents.Space:
-                        return true;
-                    default:
-                        return false;
+                    return false;
                 }
+
+                if (positions.All(x => x.Contents == Contents.Space))
+                {
+                    return true;
+                }
+                
+                pushedBoxes.AddRange(positions.Where(x => x.Contents != Contents.Space));
             } while (true);
+        }
+
+        private List<Position> GetNextPositions(IList<Position> positions, Direction direction)
+        {
+            var nextPositions = new List<Position>();
+
+            foreach (var position in positions.Where(x => x.Contents != Contents.Space))
+            {
+                var nextPosition = Map[position.Coordinate.Move(direction)];
+                
+                nextPositions.Add(nextPosition);
+                
+                if (direction is Direction.South or Direction.North)
+                {
+                    switch (nextPosition.Contents)
+                    {
+                        case Contents.BoxRight:
+                            nextPositions.Add(Map[nextPosition.Coordinate.Move(Direction.West)]);
+                            break;
+                        case Contents.BoxLeft:
+                            nextPositions.Add(Map[nextPosition.Coordinate.Move(Direction.East)]);
+                            break;
+                    }
+                }
+            }
+
+            return nextPositions.ToList();
         }
 
         private void PushBoxes(IList<Position> boxes, Direction direction)
