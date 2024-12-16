@@ -47,47 +47,49 @@ public class Day16 : DayBase
 
         public int MinimalPathToEnd(Vector from)
         {
-            return MinimalPathToEnd(from, new HashSet<Coordinate>()).Result;
+            var queue = new List<(Vector v, int cost)>();
+
+            var visited = new HashSet<Vector>();
+
+            queue.Add((from, 0));
+
+            while (queue.Count > 0)
+            {
+                queue.Sort(Comparer<(Vector v, int cost)>.Create((a,b) => a.cost.CompareTo(b.cost)));
+
+                var (currentVector, currentCost) = queue[0];
+                queue.RemoveAt(0);
+
+                if (!Map.TryGetValue(currentVector.Coordinate, out var position)) continue;
+                if (position.IsEnd) return currentCost;
+                    
+                if (!visited.Add(currentVector)) continue;
+
+                foreach (var nextVector in GetMoves(currentVector).Where(m => Map.ContainsKey(m.Coordinate)))
+                {
+                    var cost = currentCost + (nextVector.Direction == currentVector.Direction ? 1 : 1001);
+                    queue.Add((nextVector, cost));
+                }
+            }
+
+            throw new InvalidOperationException("No solutions to the maze");
+        }
+
+        private static IEnumerable<Vector> GetMoves(Vector v)
+        {
+            var d1 = v.Direction.Rotate90CounterClockwise();
+            var v1 = new Vector(v.Coordinate.Move(d1), d1);
+            yield return v1;
+            
+            var d2 = v.Direction.Rotate90Clockwise();
+            var v2 = new Vector(v.Coordinate.Move(d2), d2);
+            yield return v2;
+
+            var d3 = v.Direction;
+            var v3 = new Vector(v.Coordinate.Move(d3), d3);
+            yield return v3;
         }
         
-        public async Task<int> MinimalPathToEnd(Vector from, ISet<Coordinate> visited)
-        {
-            // If we've reached the end, return zero.
-            if (Map[from.Coordinate].IsEnd) return await Task.FromResult(0);
-
-            visited.Add(from.Coordinate);
-            
-            var tasks = new List<Task<int>>();
-
-            var d1 = from.Direction.Rotate90CounterClockwise();
-            var v1 = new Vector(from.Coordinate.Move(d1), d1);
-            if (Map.ContainsKey(v1.Coordinate) && !visited.Contains(v1.Coordinate))
-            {
-                tasks.Add(MinimalPathToEnd(v1, new HashSet<Coordinate>(visited)).ContinueWith(t => 1001 + t.Result));
-            }
-            
-            var d2 = from.Direction.Rotate90Clockwise();
-            var v2 = new Vector(from.Coordinate.Move(d2), d2);
-            if (Map.ContainsKey(v2.Coordinate) && !visited.Contains(v2.Coordinate))
-            {
-                tasks.Add(MinimalPathToEnd(v2, new HashSet<Coordinate>(visited)).ContinueWith(t => 1001 + t.Result));
-            }
-
-            var d3 = from.Direction;
-            var v3 = new Vector(from.Coordinate.Move(d3), d3);
-            if (Map.ContainsKey(v3.Coordinate) && !visited.Contains(v3.Coordinate))
-            {
-                tasks.Add(MinimalPathToEnd(v3, new HashSet<Coordinate>(visited)).ContinueWith(t => 1 + t.Result));
-            }
-
-            if (tasks.Count == 0)
-            {
-                return int.MaxValue / 2;
-            }
-
-            return (await Task.WhenAll(tasks)).Min();
-        }
-
         public class Position(int x, int y)
         {
             public Coordinate Coordinate { get; } = new(x, y);
