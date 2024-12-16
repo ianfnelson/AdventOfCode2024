@@ -59,13 +59,19 @@ public class Day16 : DayBase
 
                 var (currentVector, currentCost) = queue[0];
                 queue.RemoveAt(0);
+                
+                Console.WriteLine("Queue Length {0}, X {1} Y {2}", queue.Count, currentVector.Coordinate.X, currentVector.Coordinate.Y);
 
                 if (!Map.TryGetValue(currentVector.Coordinate, out var position)) continue;
                 if (position.IsEnd) return currentCost;
-                    
-                if (!visited.Add(currentVector)) continue;
 
-                foreach (var nextVector in GetMoves(currentVector).Where(m => Map.ContainsKey(m.Coordinate)))
+                if (!visited.Add(currentVector)) continue;
+                
+                Console.WriteLine("Visited count {0}", visited.Count);
+
+                foreach (var nextVector in GetMoves(currentVector)
+                             .Where(m => Map.ContainsKey(m.Coordinate))
+                             .Where(m => !visited.Contains(m)))
                 {
                     var cost = currentCost + (nextVector.Direction == currentVector.Direction ? 1 : 1001);
                     queue.Add((nextVector, cost));

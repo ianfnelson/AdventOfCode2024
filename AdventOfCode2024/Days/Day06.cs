@@ -49,7 +49,7 @@ public class Day06 : DayBase
     {
         public Dictionary<Coordinate, Position> Positions { get; } = new();
 
-        public Vector GuardVector { get;  } = null!;
+        public Vector GuardVector { get; private set; }
         
         public void Patrol()
         {
@@ -65,14 +65,9 @@ public class Day06 : DayBase
                     break;
                 }
 
-                if (nextPosition.IsObstacle)
-                {
-                    GuardVector.Rotate90Clockwise();
-                }
-                else
-                {
-                    GuardVector.Coordinate = nextPosition.Coordinate;
-                }
+                GuardVector = nextPosition.IsObstacle ? 
+                    GuardVector with { Direction = GuardVector.Direction.Rotate90Clockwise() } : 
+                    GuardVector with { Coordinate = nextPosition.Coordinate };
             } while(true);
         }
         
