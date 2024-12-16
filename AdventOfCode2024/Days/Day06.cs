@@ -67,7 +67,7 @@ public class Day06 : DayBase
 
                 if (nextPosition.IsObstacle)
                 {
-                    GuardVector.Rotate90();
+                    GuardVector.Rotate90Clockwise();
                 }
                 else
                 {

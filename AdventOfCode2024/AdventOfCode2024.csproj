@@ -72,5 +72,9 @@
       <Content Include="InputFiles\15.txt">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <None Remove="InputFiles\16.txt" />
+      <Content Include="InputFiles\16.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 </Project>

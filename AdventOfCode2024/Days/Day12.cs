@@ -85,7 +85,7 @@ public class Day12 : DayBase
 
         private bool IsClockwiseCorner(Plot p1, Direction direction)
         {
-            var clockwiseDirection = direction.Rotate90();
+            var clockwiseDirection = direction.Rotate90Clockwise();
 
             if (!Plots.TryGetValue(p1.Coordinate.Move(direction), out var p2) || p2.Plant != p1.Plant)
             {

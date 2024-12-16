@@ -1,7 +1,7 @@
 namespace AdventOfCode2024.Common;
 
 public static class DirectionExtensions {
-    public static Direction Rotate90(this Direction direction)
+    public static Direction Rotate90Clockwise(this Direction direction)
     {
         return direction switch
         {
@@ -9,6 +9,18 @@ public static class DirectionExtensions {
             Direction.East => Direction.South,
             Direction.South => Direction.West,
             Direction.West => Direction.North,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+    
+    public static Direction Rotate90CounterClockwise(this Direction direction)
+    {
+        return direction switch
+        {
+            Direction.North => Direction.West,
+            Direction.East => Direction.North,
+            Direction.South => Direction.East,
+            Direction.West => Direction.South,
             _ => throw new ArgumentOutOfRangeException()
         };
     }
