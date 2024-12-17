@@ -55,4 +55,20 @@ public class Day17Tests
 
         Assert.That(computer.Register.B, Is.EqualTo(44354));
     }
+
+    [Test]
+    public void Part1Test()
+    {
+        var sut = new Day17();
+        
+        Assert.That(sut.Part1("TestData/17a.txt"), Is.EqualTo("4,6,3,5,6,3,5,2,1,0"));
+    }
+    
+    [Test]
+    public void Part2Test()
+    {
+        var sut = new Day17();
+
+        Assert.That(sut.Part2("TestData/17b.txt"), Is.EqualTo("117440"));
+    }
 }

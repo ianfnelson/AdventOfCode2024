@@ -4,21 +4,47 @@ public class Day17 : DayBase
 {
     protected override string Part1(IEnumerable<string> inputData)
     {
-        var computer = new Computer(61156655, 0, 0);
+        var parsed = ParseInput(inputData.ToList());
 
-        computer.Run("2,4,1,5,7,5,4,3,1,6,0,3,5,5,3,0");
-
+        var computer = new Computer(parsed.Registers);
+        computer.Run(parsed.Program);
         return computer.Output;
     }
 
     protected override string Part2(IEnumerable<string> inputData)
     {
-        throw new NotImplementedException();
+        var parsed = ParseInput(inputData.ToList());
+        var b = parsed.Registers.B;
+        var c = parsed.Registers.C;
+
+        var a = 0;
+
+        string output;
+        do
+        {
+            a++;
+            var computer = new Computer(a, b, c);
+            computer.Run(parsed.Program);
+            output = computer.Output;
+        } while (output != parsed.Program);
+
+        return a.ToString();
+    }
+    
+    private (Computer.Registers Registers, string Program) ParseInput(IList<string> inputData)
+    {
+        var a = int.Parse(inputData[0].Replace("Register A: ", ""));
+        var b = int.Parse(inputData[1].Replace("Register B: ", ""));
+        var c = int.Parse(inputData[2].Replace("Register C: ", ""));
+
+        var program = inputData[4].Replace("Program: ", "");
+
+        return new ValueTuple<Computer.Registers, string>(new Computer.Registers(a, b, c), program);
     }
 
     public override int Day => 17;
 
-    public class Computer(int a, int b, int c)
+    public class Computer
     {
         public class Registers(int a, int b, int c)
         {
@@ -29,11 +55,20 @@ public class Day17 : DayBase
             public int C { get; set; } = c;
         }
 
+        public Computer(Registers registers)
+        {
+            Register = registers;
+        }
+
+        public Computer(int a, int b, int c) : this(new Registers(a, b, c))
+        {
+        }
+
         private readonly List<int> _program = new();
 
         private int InstructionPointer { get; set; }
 
-        public Registers Register { get; } = new(a, b, c);
+        public Registers Register { get; }
 
         private readonly List<int> _output = new();
 
