@@ -52,19 +52,27 @@ public class Day18 : DayBase
 
         public Coordinate FirstCutOff()
         {
-            for (int i = 1; i <= _bytes.Count; i++)
+            int left = 0;
+            int right = _bytes.Count - 1;
+
+            while (left < right)
             {
+                int mid = left + (right - left) / 2;
+
                 try
                 {
-                    ShortestPathAfter(i);
+                    ShortestPathAfter(mid + 1);
                 }
-                catch (InvalidOperationException)
+                catch (InvalidOperationException e)
                 {
-                    return _bytes[i-1];
+                    right = mid;
+                    continue;
                 }
+
+                left = mid + 1;
             }
 
-            throw new InvalidOperationException();
+            return _bytes[left];
         }
         
         public int ShortestPathAfter(int bytes)
