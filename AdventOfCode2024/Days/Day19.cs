@@ -6,7 +6,7 @@ public class Day19 : DayBase
     {
         var puzzle = new Puzzle(inputData.ToList());
 
-        return puzzle.PossibleDesigns().ToString();
+        return puzzle.CountPossibleDesigns().ToString();
     }
 
     protected override string Part2(IEnumerable<string> inputData)
@@ -18,19 +18,13 @@ public class Day19 : DayBase
 
     public override int Day => 19;
 
-    public class Puzzle
+    private class Puzzle(IList<string> inputData)
     {
-        public Puzzle(IList<string> inputData)
-        {
-            _towels = inputData[0].Split(", ").ToList();
-            _designs = inputData.Skip(2).ToList();
-        }
-        
-        private readonly List<string> _towels;
+        private readonly List<string> _towels = inputData[0].Split(", ").ToList();
 
-        private readonly List<string> _designs;
+        private readonly List<string> _designs = inputData.Skip(2).ToList();
 
-        public int PossibleDesigns()
+        public int CountPossibleDesigns()
         {
             return _designs.Count(x => CountWays(x) > 0);
         }
@@ -43,10 +37,7 @@ public class Day19 : DayBase
         private long CountWays(string design)
         {
             var memo = new Dictionary<int, long>();
-            
-            var answer= CountWaysPartial(0, memo, design);
-
-            return answer;
+            return CountWaysPartial(0, memo, design);
         }
 
         private long CountWaysPartial(int position, Dictionary<int, long> memo, string design)
