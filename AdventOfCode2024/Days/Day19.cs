@@ -11,7 +11,9 @@ public class Day19 : DayBase
 
     protected override string Part2(IEnumerable<string> inputData)
     {
-        throw new NotImplementedException();
+        var puzzle = new Puzzle(inputData.ToList());
+
+        return puzzle.CountWays().ToString();
     }
 
     public override int Day => 19;
@@ -30,17 +32,24 @@ public class Day19 : DayBase
 
         public int PossibleDesigns()
         {
-            return _designs.Count(IsDesignPossible);
+            return _designs.Count(x => CountWays(x) > 0);
         }
 
-        private bool IsDesignPossible(string design)
+        public long CountWays()
         {
-            var memo = new Dictionary<int, bool>();
-            
-            return IsPartialDesignPossible(0, memo, design);
+            return _designs.Sum(CountWays);
         }
 
-        private bool IsPartialDesignPossible(int position, Dictionary<int, bool> memo, string design)
+        private long CountWays(string design)
+        {
+            var memo = new Dictionary<int, long>();
+            
+            var answer= CountWaysPartial(0, memo, design);
+
+            return answer;
+        }
+
+        private long CountWaysPartial(int position, Dictionary<int, long> memo, string design)
         {
             if (memo.TryGetValue(position, out var possible))
             {
@@ -49,25 +58,22 @@ public class Day19 : DayBase
 
             if (position == design.Length)
             {
-                return true;
+                return 1L;
             }
+
+            var ways = 0L;
 
             foreach (var towel in _towels)
             {
                 if (position + towel.Length <= design.Length &&
                     design[position..].StartsWith(towel))
                 {
-                    if (IsPartialDesignPossible(position + towel.Length, memo, design))
-                    {
-                        memo[position] = true;
-                        return true;
-                    }
+                    ways += CountWaysPartial(position + towel.Length, memo, design);
                 }
             }
 
-            memo[position] = false;
-            return false;
+            memo[position] = ways;
+            return ways;
         }
     }
-    
 }
