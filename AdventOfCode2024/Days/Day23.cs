@@ -17,7 +17,9 @@ public class Day23 : DayBase
 
     protected override string Part2(IEnumerable<string> inputData)
     {
-        throw new NotImplementedException();
+        var puzzle = new Puzzle(inputData);
+
+        return puzzle.GetLanPartyPassword();
     }
 
     public class Puzzle
@@ -62,8 +64,61 @@ public class Day23 : DayBase
 
             return triangles;
         }
+
+        public string GetLanPartyPassword()
+        {
+            var cliques = new List<HashSet<string>>();
+            var p = new HashSet<string>(_adjacencies.Keys); // Set of all nodes
+            var r = new HashSet<string>();          // Currently growing clique
+            var x = new HashSet<string>();          // Already processed nodes
+
+            BronKerbosch(r, p, x, _adjacencies, cliques);
+            
+            return
+                string.Join(",",
+                    cliques
+                        .OrderByDescending(c => c.Count)
+                        .First()
+                        .OrderBy(c => c));
+        }
+        
+        private static void BronKerbosch(
+            HashSet<string> r, 
+            HashSet<string> p, 
+            HashSet<string> x,
+            Dictionary<string, HashSet<string>> graph, 
+            List<HashSet<string>> cliques)
+        {
+            if (p.Count == 0 && x.Count == 0)
+            {
+                // R is a maximal clique
+                cliques.Add([..r]);
+                return;
+            }
+
+            // Make a copy of P to iterate safely
+            var pCopy = new HashSet<string>(p);
+
+            foreach (var v in pCopy)
+            {
+                // R ∪ {v}
+                var newR = new HashSet<string>(r) { v };
+
+                // P ∩ N(v)
+                var newP = new HashSet<string>(p.Intersect(graph[v]));
+
+                // X ∩ N(v)
+                var newX = new HashSet<string>(x.Intersect(graph[v]));
+
+                // Recursive call
+                BronKerbosch(newR, newP, newX, graph, cliques);
+
+                // Remove v from P and add to X
+                p.Remove(v);
+                x.Add(v);
+            }
+        }
     }
-    
 
     public override int Day => 23;
 }
