@@ -92,5 +92,9 @@
       <Content Include="InputFiles\22.txt">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <None Remove="InputFiles\23.txt" />
+      <Content Include="InputFiles\23.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 </Project>
